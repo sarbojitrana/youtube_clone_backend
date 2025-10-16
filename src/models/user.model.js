@@ -32,7 +32,7 @@
         coverimage : {
             type : String,
         },
-        warchHistory: [
+        watchHistory: [
             {
                 type : Schema.Types.ObjectId,
                 ref : "Video"
@@ -67,7 +67,7 @@ userSchema.pre("save", async function (next){
 
 userSchema.methods.isPasswordCorrect = async function(password){
     try{
-        await bcrypt.compare(password, this.password);
+        return await bcrypt.compare(password, this.password);
     }
     catch(err){
         throw err;
@@ -89,7 +89,7 @@ userSchema.methods.generateAccessToken = async function(){
     )
 }
 
-userSchema.methods.generateAccessToken = async function(){
+userSchema.methods.generateRefreshToken = async function(){
     return jwt.sign(
         {
             _id: this._id,
