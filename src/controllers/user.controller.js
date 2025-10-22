@@ -3,6 +3,7 @@ import {ApiError} from "../utils/ApiError.js"
 import {User} from "../models/user.model.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
+import fs from "fs"
 
 const registerUser = asyncHandler(async(req, res) =>{
     // get user details from frontend
@@ -13,6 +14,29 @@ const registerUser = asyncHandler(async(req, res) =>{
     // create user object -create entry in db
     // remove password and refresh token field from response
     // check for user creation if yes then return response else err
+
+    const cleanupLocalFiles = ()=>{
+        const avatarLocalPath = req.files?.avatar?.[0]?.path;
+        if(avatarLocalPath){
+            try{
+                fs.unlinkSync(avatarLocalPath);
+                console.log(`Removed local avatar: ${avatarLocalPath}`);
+            }
+            catch(error){
+                console.log("Error deleting local avatar: ", error);
+            }
+        }
+        const coverImageLocalPath = req.files?.coverImage?.[0]?.path;
+        if(coverImageLocalPath){
+            try{
+                fs.unlinkSync(coverImageLocalPath);
+                console.log(`Removed local Cover Image: ${coverImageLocalPath}`);
+            }
+            catch(error){
+                console.log("Error deleting local avatar: ", error);
+            }
+        }
+    };
 
     const {fullName, email, username, password} = req.body
     
@@ -30,12 +54,14 @@ const registerUser = asyncHandler(async(req, res) =>{
 
 
     if(exitsedUser){
+        cleanupLocalFiles(); // to formally remove both
         throw new ApiError(409, "User already exists")
     }
 
-    const avatarLocalPath =  req.files?.avatar[0]?.path
+    const avatarLocalPath =  req.files?.avatar?.[0]?.path
 
     if(!avatarLocalPath){
+        cleanupLocalFiles(); // is only cover image was uploaded no avatar
         throw new ApiError(400, "Avatar file is required")
     }
     console.log( "Attempting to upload avatar from : " , avatarLocalPath)
@@ -45,10 +71,11 @@ const registerUser = asyncHandler(async(req, res) =>{
     console.log("Cloudinary avatar response : ", avatar)
 
     if(!avatar){
+        cleanupLocalFiles(); // this ensures cover image is also removed when you have the avatar but failed to upload
         throw new ApiError(400, "Avatar is required");
     }
 
-    const coverImageLocalPath = req.files?.coverImage[0]?.path
+    const coverImageLocalPath = req.files?.coverImage?.[0]?.path
     let coverImage = null
 
     if(coverImageLocalPath){
@@ -75,6 +102,7 @@ const registerUser = asyncHandler(async(req, res) =>{
     )
 
     if(!createdUser){
+        // delettion logic needed for cloudinary
         throw new ApiError(500, "Something went wrong while registering the user")
     }
 

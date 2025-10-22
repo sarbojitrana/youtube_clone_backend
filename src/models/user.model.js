@@ -29,7 +29,7 @@
             type : String,  // cloudinary url will be used later
             require : true,
         },
-        coverimage : {
+        coverImage : {
             type : String,
         },
         watchHistory: [
