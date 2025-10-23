@@ -15,7 +15,7 @@ const registerUser = asyncHandler(async(req, res) =>{
     // remove password and refresh token field from response
     // check for user creation if yes then return response else err
 
-    const cleanupLocalFiles = ()=>{
+    const cleanupLocalFiles = ()=>{ // to ensure no files remain on the server, this will help in the case when the upload the cloudinary fails but the files still get uploaded to the server
         const avatarLocalPath = req.files?.avatar?.[0]?.path;
         if(avatarLocalPath){
             try{
@@ -49,7 +49,7 @@ const registerUser = asyncHandler(async(req, res) =>{
     }
 
     const exitsedUser = await User.findOne({
-        $or: [{username}, {email}]
+        $or: [{username : username}, {email : email}]
     })
 
 
@@ -102,7 +102,7 @@ const registerUser = asyncHandler(async(req, res) =>{
     )
 
     if(!createdUser){
-        // delettion logic needed for cloudinary
+        // delettion logic needed for cloudinary to rollback
         throw new ApiError(500, "Something went wrong while registering the user")
     }
 
@@ -113,8 +113,79 @@ const registerUser = asyncHandler(async(req, res) =>{
 
 })
 
+const generateAccessAndRefreshTokens = async(UserId) =>{
+    try{
+        const user = await User.findById(UserId)
+        const accessToken =  await user.generateAccessToken() 
+        const refreshToken =  await user.generateRefreshToken() 
+
+        user.refreshToken = refreshToken // we only save the refresh token in the database 
+
+        await user.save({validateBeforeSave : false}) // since we haven't set passwords etc we need to ignore validation
+
+        return {accessToken, refreshToken}
+    }
+    catch(error){
+        throw new ApiError(500, "Something went wrong while generating the Access and Refresh Tokens")
+    }
+}
+
+const loginUser = asyncHandler(async(req,res) =>{
+    // req.body -> data
+    //username or email
+    // validate the input
+    // check if the inputs match in the database or not(find the user)
+    // if they match then check if they're correct(passwork check)
+    // generate accesstoken and refreshtoken
+    // send cookies
+    // response
+
+    const {username, email, password} = req.body
+
+    if(!username && !email){
+        throw new ApiError(400, "username or email is required")
+    }
+
+    const user = await User.findOne({
+        $or : [{email : email}, {username : username}]
+    })
+
+    if(!user){
+        throw new ApiError(404, "User does not exist")
+    }
+
+    const isPasswordValid = await user.isPasswordCorrect(password)
+
+    if(!isPasswordValid){
+        throw new ApiError(401, "Invalid user credentials")
+    }
+
+    const {accessToken, refreshToken}  = await generateAccessAndRefreshTokens(user._id)
+
+    const loggedInUser = await User.findById(user._id).select(" -password -refreshToken")
+
+    const options = {
+        httponly: true,
+        secure : true
+    }
+
+    return res.status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                user : loggedInUser, accessToken, refreshToken
+            },
+            "User logged in Successfully"
+        )
+    )
+
+})
 export {
     registerUser,
+    loginUser
 }
 
 
