@@ -5,6 +5,7 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import fs from "fs"
 import jwt from "jsonwebtoken"
+import mongoose from "mongoose";
 
 const registerUser = asyncHandler(async(req, res) =>{
     // get user details from frontend
