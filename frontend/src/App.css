@@ -1,0 +1,73 @@
+.app {
+  max-width: 420px;
+  margin: 4rem auto;
+  padding: 0 1rem;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  text-align: left;
+  background: #f7f7f8;
+  border-radius: 10px;
+  padding: 1.5rem;
+}
+
+.card label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.card input {
+  padding: 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.card button {
+  padding: 0.6rem;
+  border-radius: 6px;
+  border: none;
+  background: #dd2c2c;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.card button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.card .link {
+  background: none;
+  color: #dd2c2c;
+  padding: 0;
+  display: inline;
+  font: inherit;
+  text-decoration: underline;
+}
+
+.error {
+  color: #c0392b;
+  font-size: 0.9rem;
+}
+
+.switch {
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  align-self: center;
+}

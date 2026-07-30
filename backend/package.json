@@ -1,7 +1,7 @@
 {
-  "name": "v-tube",
+  "name": "streamhub-backend",
   "version": "1.0.0",
-  "description": "a backend at chai aur code channel - youtube",
+  "description": "StreamHub backend API (video-sharing platform, YouTube-clone style)",
   "type": "module",
   "main": "index.js",
   "scripts": {
